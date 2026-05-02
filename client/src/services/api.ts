@@ -1,5 +1,14 @@
 import axios, { AxiosError } from 'axios';
 import type { Property, Document, RiskReport, User, ApiResponse } from '../types';
+import {
+  demoAuthApi, demoUserApi, demoPropertyApi,
+  demoDocumentApi, demoReportApi, demoAdminApi,
+} from './demoApi';
+
+// Auto-enable demo mode on GitHub Pages (no backend available there)
+export const IS_DEMO =
+  (import.meta as unknown as { env: Record<string, string> }).env?.VITE_DEMO_MODE === 'true' ||
+  window.location.hostname.endsWith('github.io');
 
 const api = axios.create({
   baseURL: '/api',
@@ -35,7 +44,7 @@ function errMsg(err: unknown): string {
 }
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
-export const authApi = {
+const realAuthApi = {
   register: async (data: {
     email: string; password: string; full_name: string;
     role: string; phone?: string; consent_gdpr: boolean;
@@ -45,7 +54,6 @@ export const authApi = {
       return res.data;
     } catch (err) { throw new Error(errMsg(err)); }
   },
-
   login: async (email: string, password: string) => {
     try {
       const res = await api.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
@@ -53,9 +61,10 @@ export const authApi = {
     } catch (err) { throw new Error(errMsg(err)); }
   },
 };
+export const authApi: typeof realAuthApi = IS_DEMO ? (demoAuthApi as unknown as typeof realAuthApi) : realAuthApi;
 
 // ─── Users ───────────────────────────────────────────────────────────────────
-export const userApi = {
+const realUserApi = {
   getMe: async () => {
     const res = await api.get<ApiResponse<User>>('/users/me');
     return res.data.data!;
@@ -73,9 +82,10 @@ export const userApi = {
     return res.data;
   },
 };
+export const userApi: typeof realUserApi = IS_DEMO ? (demoUserApi as unknown as typeof realUserApi) : realUserApi;
 
 // ─── Properties ──────────────────────────────────────────────────────────────
-export const propertyApi = {
+const realPropertyApi = {
   list: async (limit = 20, offset = 0) => {
     const res = await api.get<ApiResponse<Property[]>>('/properties', { params: { limit, offset } });
     return res.data;
@@ -99,9 +109,10 @@ export const propertyApi = {
     return res.data;
   },
 };
+export const propertyApi: typeof realPropertyApi = IS_DEMO ? (demoPropertyApi as unknown as typeof realPropertyApi) : realPropertyApi;
 
 // ─── Documents ───────────────────────────────────────────────────────────────
-export const documentApi = {
+const realDocumentApi = {
   list: async (propertyId: string) => {
     const res = await api.get<ApiResponse<Document[]>>(`/properties/${propertyId}/documents`);
     return res.data.data!;
@@ -132,9 +143,10 @@ export const documentApi = {
   download: (propertyId: string, docId: string) =>
     `/api/properties/${propertyId}/documents/${docId}/download`,
 };
+export const documentApi: typeof realDocumentApi = IS_DEMO ? (demoDocumentApi as unknown as typeof realDocumentApi) : realDocumentApi;
 
 // ─── Reports ─────────────────────────────────────────────────────────────────
-export const reportApi = {
+const realReportApi = {
   analyze: async (propertyId: string) => {
     try {
       const res = await api.post<ApiResponse<{ report_id: string }>>(`/properties/${propertyId}/analyze`);
@@ -146,9 +158,10 @@ export const reportApi = {
     return res.data.data;
   },
 };
+export const reportApi: typeof realReportApi = IS_DEMO ? (demoReportApi as unknown as typeof realReportApi) : realReportApi;
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
-export const adminApi = {
+const realAdminApi = {
   getStats: async () => {
     const res = await api.get<ApiResponse>('/admin/stats');
     return res.data.data;
@@ -170,5 +183,6 @@ export const adminApi = {
     return res.data;
   },
 };
+export const adminApi: typeof realAdminApi = IS_DEMO ? (demoAdminApi as unknown as typeof realAdminApi) : realAdminApi;
 
 export default api;

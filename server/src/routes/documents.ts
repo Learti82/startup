@@ -16,58 +16,65 @@ router.post('/', authenticate, upload.single('file'), async (req: Request, res: 
     return;
   }
 
-  const propCheck = await query(
-    'SELECT id FROM properties WHERE id=$1 AND user_id=$2',
-    [req.params.propertyId, req.user!.userId]
-  );
-  if (!propCheck.rows.length) {
-    fs.unlinkSync(req.file.path);
-    res.status(404).json({ success: false, error: 'Prona nuk u gjet' });
-    return;
-  }
-
-  const documentType = req.body.document_type || 'other';
-  const allowedTypes = ['cadastral_extract','construction_permit','ownership_contract','mortgage_certificate','id_document','use_permit','property_tax','court_order','other'];
-  if (!allowedTypes.includes(documentType)) {
-    fs.unlinkSync(req.file.path);
-    res.status(400).json({ success: false, error: 'Lloji i dokumentit nuk njihet' });
-    return;
-  }
-
-  const encryptedPath = req.file.path + '.enc';
-  let iv: string;
   try {
-    iv = encryptFile(req.file.path, encryptedPath);
-    fs.unlinkSync(req.file.path);
-  } catch {
-    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    res.status(500).json({ success: false, error: 'Enkriptimi i skedarit dështoi' });
-    return;
+    const propCheck = await query(
+      'SELECT id FROM properties WHERE id=$1 AND user_id=$2',
+      [req.params.propertyId, req.user!.userId]
+    );
+    if (!propCheck.rows.length) {
+      fs.unlinkSync(req.file.path);
+      res.status(404).json({ success: false, error: 'Prona nuk u gjet' });
+      return;
+    }
+
+    const documentType = req.body.document_type || 'other';
+    const allowedTypes = ['cadastral_extract','construction_permit','ownership_contract','mortgage_certificate','id_document','use_permit','property_tax','court_order','other'];
+    if (!allowedTypes.includes(documentType)) {
+      fs.unlinkSync(req.file.path);
+      res.status(400).json({ success: false, error: 'Lloji i dokumentit nuk njihet' });
+      return;
+    }
+
+    const encryptedPath = req.file.path + '.enc';
+    let iv: string;
+    try {
+      iv = encryptFile(req.file.path, encryptedPath);
+      fs.unlinkSync(req.file.path);
+    } catch (encErr) {
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error('Encryption error:', encErr);
+      res.status(500).json({ success: false, error: 'Enkriptimi i skedarit dështoi' });
+      return;
+    }
+
+    const result = await query(
+      `INSERT INTO documents
+        (property_id, user_id, document_type, original_filename, stored_filename,
+         file_path, file_size_bytes, mime_type, encryption_iv, is_encrypted)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true)
+       RETURNING *`,
+      [
+        req.params.propertyId, req.user!.userId, documentType,
+        req.file.originalname, path.basename(encryptedPath),
+        encryptedPath, req.file.size, req.file.mimetype, iv,
+      ]
+    );
+
+    await query(
+      "UPDATE properties SET status='pending', updated_at=NOW() WHERE id=$1",
+      [req.params.propertyId]
+    );
+
+    await logAction(req.user!.userId, 'upload_document', 'document',
+      (result.rows[0] as Record<string, unknown>).id as string,
+      { type: documentType, filename: req.file.originalname }, req);
+
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    console.error('Upload error:', err);
+    res.status(500).json({ success: false, error: 'Ngarkimi i skedarit dështoi' });
   }
-
-  const result = await query(
-    `INSERT INTO documents
-      (property_id, user_id, document_type, original_filename, stored_filename,
-       file_path, file_size_bytes, mime_type, encryption_iv, is_encrypted)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true)
-     RETURNING *`,
-    [
-      req.params.propertyId, req.user!.userId, documentType,
-      req.file.originalname, path.basename(encryptedPath),
-      encryptedPath, req.file.size, req.file.mimetype, iv,
-    ]
-  );
-
-  await query(
-    "UPDATE properties SET status='pending', updated_at=NOW() WHERE id=$1",
-    [req.params.propertyId]
-  );
-
-  await logAction(req.user!.userId, 'upload_document', 'document',
-    (result.rows[0] as Record<string, unknown>).id as string,
-    { type: documentType, filename: req.file.originalname }, req);
-
-  res.status(201).json({ success: true, data: result.rows[0] });
 });
 
 router.get('/', authenticate, async (req: Request, res: Response) => {

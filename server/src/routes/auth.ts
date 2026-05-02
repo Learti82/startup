@@ -48,7 +48,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
   await query(
     `INSERT INTO subscriptions (user_id, plan, reports_limit, price_eur)
-     VALUES ($1, 'free', 1, 0)`,
+     VALUES ($1, 'free', 999, 0)`,
     [user.id]
   );
 

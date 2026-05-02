@@ -1,6 +1,7 @@
 import Navbar from './Navbar';
 import { t } from '../i18n';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, FlaskConical } from 'lucide-react';
+import { IS_DEMO } from '../services/api';
 
 interface Props {
   children: React.ReactNode;
@@ -10,6 +11,12 @@ interface Props {
 export default function Layout({ children, hideFooter }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {IS_DEMO && (
+        <div className="bg-amber-400 text-amber-900 text-xs font-semibold text-center py-1.5 px-4 flex items-center justify-center gap-2">
+          <FlaskConical className="w-3.5 h-3.5" />
+          DEMO MODE — Të dhënat janë simuluese. Për version të plotë ekzekutoni: docker compose up
+        </div>
+      )}
       <Navbar />
       <main className="flex-1">{children}</main>
       {!hideFooter && (

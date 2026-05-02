@@ -58,6 +58,7 @@ export interface RiskItem {
   description: string;
   recommendation?: string;
   is_resolved: boolean;
+  created_at?: string;
 }
 
 export interface RiskReport {

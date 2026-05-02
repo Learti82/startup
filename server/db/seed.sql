@@ -1,5 +1,5 @@
 -- PronA Analyzer — Seed / Demo Data
--- Passwords are bcrypt hashes of: Admin@2024!, Buyer@2024!, Lawyer@2024!
+-- Passwords: admin@prona.ks → Admin@2024!  |  all others → password123
 
 -- ─────────────────────────────────────────────
 -- USERS
@@ -7,25 +7,25 @@
 INSERT INTO users (id, email, password_hash, full_name, role, phone, consent_gdpr, consent_date) VALUES
   ('00000000-0000-0000-0000-000000000001',
    'admin@prona.ks',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.s5uOeq',
+   '$2b$12$6jFE6q9AgC/UqJHuGWBSz.XYVeS0dBKwnd7BnEsiQb7baZ08tFgWK',
    'Admin PronA',
    'admin', '+383 44 111 222', true, NOW()),
 
   ('00000000-0000-0000-0000-000000000002',
    'arbeni@demo.ks',
-   '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC4J0e12WgNRBB.fG5va',
+   '$2b$12$3L4renImAXMNI6yDH5zTBOOpO0wJsYprwsqXysuWy06v2I4rXmFmG',
    'Arben Gashi',
    'buyer', '+383 44 222 333', true, NOW()),
 
   ('00000000-0000-0000-0000-000000000003',
    'avokati@demo.ks',
-   '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC4J0e12WgNRBB.fG5va',
+   '$2b$12$3L4renImAXMNI6yDH5zTBOOpO0wJsYprwsqXysuWy06v2I4rXmFmG',
    'Blerta Krasniqi',
    'lawyer', '+383 45 333 444', true, NOW()),
 
   ('00000000-0000-0000-0000-000000000004',
    'banka@demo.ks',
-   '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC4J0e12WgNRBB.fG5va',
+   '$2b$12$3L4renImAXMNI6yDH5zTBOOpO0wJsYprwsqXysuWy06v2I4rXmFmG',
    'Valon Berisha – Pro Credit Bank',
    'bank', '+383 38 555 666', true, NOW());
 
@@ -34,7 +34,7 @@ INSERT INTO users (id, email, password_hash, full_name, role, phone, consent_gdp
 -- ─────────────────────────────────────────────
 INSERT INTO subscriptions (user_id, plan, status, reports_limit, price_eur) VALUES
   ('00000000-0000-0000-0000-000000000001', 'enterprise', 'active', 9999, 0),
-  ('00000000-0000-0000-0000-000000000002', 'free', 'active', 1, 0),
+  ('00000000-0000-0000-0000-000000000002', 'free', 'active', 999, 0),
   ('00000000-0000-0000-0000-000000000003', 'professional', 'active', 50, 99),
   ('00000000-0000-0000-0000-000000000004', 'enterprise', 'active', 500, 299);
 

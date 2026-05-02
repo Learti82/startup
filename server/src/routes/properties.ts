@@ -28,23 +28,6 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     return;
   }
 
-  const sub = await query(
-    "SELECT reports_used, reports_limit FROM subscriptions WHERE user_id=$1 AND status='active'",
-    [req.user!.userId]
-  );
-  const subscription = sub.rows[0] as Record<string, unknown> | undefined;
-  if (subscription && Number(subscription.reports_used) >= Number(subscription.reports_limit)) {
-    const totalProps = await query('SELECT COUNT(*) FROM properties WHERE user_id=$1', [req.user!.userId]);
-    const count = parseInt((totalProps.rows[0] as Record<string, unknown>).count as string, 10);
-    if (count >= Number(subscription.reports_limit)) {
-      res.status(402).json({
-        success: false,
-        error: 'Keni arritur limitin e raporteve falas. Zgjidhni një plan për të vazhduar.',
-      });
-      return;
-    }
-  }
-
   const data = parsed.data;
   const result = await query(
     `INSERT INTO properties
