@@ -36,6 +36,7 @@ services:
       JWT_SECRET: change_me_in_production_jwt_secret_256bit
       ENCRYPTION_KEY: change_me_in_production_32char_key!
       PORT: 3001
+      DATABASE_SSL: "false"
       UPLOAD_DIR: /app/uploads
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       FRONTEND_URL: http://localhost:5173
