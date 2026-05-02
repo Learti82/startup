@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: prona_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: prona_analyzer
+      POSTGRES_USER: prona_user
+      POSTGRES_PASSWORD: prona_secret_2024
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/db/001_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./server/db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prona_user -d prona_analyzer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: prona_server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://prona_user:prona_secret_2024@db:5432/prona_analyzer
+      JWT_SECRET: change_me_in_production_jwt_secret_256bit
+      ENCRYPTION_KEY: change_me_in_production_32char_key!
+      PORT: 3001
+      UPLOAD_DIR: /app/uploads
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      FRONTEND_URL: http://localhost:5173
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "3001:3001"
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: prona_client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:
+  uploads_data:
