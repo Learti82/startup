@@ -27,7 +27,14 @@ export default function Login() {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.errors.serverError);
+      const msg = err instanceof Error ? err.message : t.errors.serverError;
+      const isNetworkErr = msg.includes('Network Error') || msg.includes('ECONNREFUSED') || msg.includes('Failed to fetch');
+      toast.error(
+        isNetworkErr
+          ? 'Serveri nuk është i disponueshëm. Ekzekutoni: docker compose up'
+          : msg,
+        { duration: 6000 }
+      );
     } finally {
       setLoading(false);
     }
@@ -95,10 +102,22 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-gray-500">
-            <p className="font-medium mb-1">Demo llogaritë:</p>
-            <p>blerës: arbeni@demo.ks / password123</p>
-            <p>admin: admin@prona.ks / Admin@2024!</p>
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-gray-500 space-y-2">
+            <p className="font-medium text-gray-700">Llogari demo (klikoni për të hyrë):</p>
+            <button
+              type="button"
+              onClick={() => { setEmail('arbeni@demo.ks'); setPassword('password123'); }}
+              className="w-full text-left px-2 py-1.5 bg-white border border-gray-200 rounded hover:border-brand-300 hover:bg-brand-50 transition-colors"
+            >
+              👤 Blerës — arbeni@demo.ks
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('admin@prona.ks'); setPassword('Admin@2024!'); }}
+              className="w-full text-left px-2 py-1.5 bg-white border border-gray-200 rounded hover:border-brand-300 hover:bg-brand-50 transition-colors"
+            >
+              🛡️ Admin — admin@prona.ks
+            </button>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Plus, TrendingUp, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+// AlertTriangle kept for stats card
 import Layout from '../components/Layout';
 import PropertyCard from '../components/PropertyCard';
 import { propertyApi } from '../services/api';
@@ -42,20 +43,6 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Subscription banner */}
-        {user && user.plan === 'free' && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
-              <span className="text-sm text-amber-800">
-                Jeni në planin <strong>Falas</strong>. Keni <strong>{(user.reports_limit || 1) - (user.reports_used || 0)}</strong> raport të mbetur.
-              </span>
-            </div>
-            <Link to="/pricing" className="text-sm font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap">
-              Zgjeroni planin →
-            </Link>
-          </div>
-        )}
 
         {/* Stats */}
         {properties.length > 0 && (

@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 export default function Register() {
   const [form, setForm] = useState({
-    email: '', password: '', full_name: '', phone: '', role: 'buyer', consent_gdpr: false,
+    email: '', password: '', full_name: '', phone: '', role: 'buyer', consent_gdpr: true,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,14 @@ export default function Register() {
         navigate('/dashboard');
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.errors.serverError);
+      const msg = err instanceof Error ? err.message : t.errors.serverError;
+      const isNetworkErr = msg.includes('Network Error') || msg.includes('ECONNREFUSED') || msg.includes('Failed to fetch');
+      toast.error(
+        isNetworkErr
+          ? 'Serveri nuk është i disponueshëm. Ekzekutoni: docker compose up'
+          : msg,
+        { duration: 6000 }
+      );
     } finally {
       setLoading(false);
     }
